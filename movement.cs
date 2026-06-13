@@ -1,5 +1,6 @@
-using Unity.VisualScripting;
 using UnityEngine;
+
+
 
 public class movement : MonoBehaviour
 {
@@ -8,9 +9,7 @@ public class movement : MonoBehaviour
     private SpriteRenderer sp;
     private Animator animator;
     private Rigidbody2D rb;
-    public float jump = 3f;
     private bool isjumping = false;
-    private bool isgrounded;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -23,41 +22,33 @@ public class movement : MonoBehaviour
     void Update()
     {
         horizontalinput = Input.GetAxisRaw("Horizontal");
-        
-        
+
         if (Input.GetKey(KeyCode.A))
         {
             sp.flipX = true;
-            animator.SetBool("isrunning", true);
-        }
-        else if (Input.GetKey(KeyCode.D))
-        {
-            sp.flipX = false;
-            animator.SetBool("isrunning", true);
 
         }
-        else
+        if (Input.GetKey(KeyCode.D))
         {
-            animator.SetBool("isrunning", false);
+            sp.flipX = false;
         }
-        if (Input.GetButtonDown("Jump") && !isjumping)
+
+        if (Input.GetKeyDown(KeyCode.Space)) 
         {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jump);
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, 5f);
             isjumping = true;
-            animator.SetBool("isjumping", true);
         }
     }
+
     private void FixedUpdate()
     {
         rb.linearVelocity = new Vector2(horizontalinput * movespeed, rb.linearVelocity.y);
     }
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        isjumping = false;
-        animator.SetBool("isfalling", true);
-    }
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        animator.SetBool("isfalling", false);
-    }
+        isjumping = false;
 }
+}
+
+
+
