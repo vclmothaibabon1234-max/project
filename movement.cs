@@ -60,7 +60,10 @@ public class movement : MonoBehaviour
             animator.SetBool("isjumping", false);
             animator.SetBool("isdoublejumping", true);
         }
-
+        if (horizontalinput < 0)
+        {
+            animator.SetFloat("isfalling", rb.linearVelocity.y);
+        }
     }
     private void jump( float force)
     {
@@ -71,7 +74,8 @@ public class movement : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         isgrounded();
-        
+        animator.SetBool("isdoublejumping", false);
+        animator.SetBool("isjumping", false);
     }
     public bool isgrounded()
     {
