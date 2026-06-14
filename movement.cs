@@ -1,13 +1,10 @@
-using System;
-using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
+using UnityEditor.U2D.Aseprite;
 using UnityEngine;
-using UnityEngine.EventSystems;
-
-
-
+using UnityEngine.InputSystem.Controls;
 public class movement : MonoBehaviour
 {
-    public float movespeed = 2f;
+    public float movespeed = 10f;
     float horizontalinput;
     private SpriteRenderer sp;
     private Animator animator;
@@ -18,6 +15,20 @@ public class movement : MonoBehaviour
     private float doublejumpforce = 5f;
     private bool candoublejump;
 
+    //wall jump
+    public Transform groundcheck;
+    public LayerMask groundlayer;
+    public Transform wallcheck;
+    public Transform wallcheck2;
+    public LayerMask walllayer;
+    private bool iswallsliding;
+    private float wallslidingspeed = 2f;
+    private bool iswalljumping;
+    private float walljumpingdirection;
+    private float walljumpingtime = 0.2f;
+    private float walljumpingcounter;
+    private float walljumpingduration;
+    private Vector2 walljumpingpower = new Vector2(8f, 5f);
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -30,19 +41,21 @@ public class movement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
         horizontalinput = Input.GetAxisRaw("Horizontal");
 
 
         if (Input.GetKey(KeyCode.A))
         {
             sp.flipX = true;
-            
+            //transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+            animator.SetBool("isrunning", true);
         }
         else if (Input.GetKey(KeyCode.D))
         {
             sp.flipX = false;
-           
+            //transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+            animator.SetBool("isrunning", true);
         }
         else
         {
@@ -67,9 +80,64 @@ public class movement : MonoBehaviour
             animator.SetBool("isjumping", false);
             animator.SetBool("isdoublejumping", true);
         }
+        wallslide();
+        walljumping();
+        animator.SetBool("iswallsliding", iswallsliding);
+        
     }
+    private bool iswalled()
+    {
+        return Physics2D.OverlapCircle(wallcheck.position, 0.1f, walllayer);
+        
+    }
+    private bool iswalled2()
+    {
+        return Physics2D.OverlapCircle(wallcheck2.position,0.1f, walllayer);
+    }
+    private void wallslide()
+    {
+        if (iswalled() && !isgrounded() && horizontalinput != 0f)
+        {
+            iswallsliding = true;
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, Mathf.Clamp(rb.linearVelocity.y, -wallslidingspeed, float.MaxValue));
+        }
+        else
+        {
+            iswallsliding = false;
+        }
+        if (iswalled2() && !isgrounded() && horizontalinput != 0f)
+        {
+            iswallsliding = true;
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, Mathf.Clamp(rb.linearVelocity.y, -wallslidingspeed, float.MaxValue));
+        }
+    }
+    private void walljumping()
+    {
+        if (iswallsliding)
+        {
+            iswalljumping = false;
+            walljumpingdirection = -transform.localScale.x;
+            walljumpingcounter = walljumpingtime;
+            CancelInvoke(nameof(stopwalljumping));
 
-
+        }
+        else
+        {
+            walljumpingcounter -= Time.deltaTime;
+        }
+        if (Input.GetButtonDown("Jump") && walljumpingcounter > 0f)
+        {
+            iswalljumping = true;
+            rb.linearVelocity = new Vector2(walljumpingdirection * walljumpingpower.x, walljumpingpower.y);
+            walljumpingcounter = 0f;
+            
+            Invoke(nameof(stopwalljumping), walljumpingduration);
+        }
+    }
+    private void stopwalljumping()
+    {
+        iswalljumping = false;
+    }
     private void jump(float force)
     {
         rb.AddForce(Vector2.up * force, ForceMode2D.Impulse);
@@ -101,10 +169,9 @@ public class movement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        rb.linearVelocity = new Vector2(horizontalinput * movespeed, rb.linearVelocity.y);
+        if (!iswalljumping)
+        {
+            rb.linearVelocity = new Vector2(horizontalinput * movespeed, rb.linearVelocity.y);
+        }
     }
 }
-   
-
-
-
