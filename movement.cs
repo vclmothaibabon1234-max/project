@@ -16,56 +16,61 @@ public class movement : MonoBehaviour
     public Vector2 boxsize;
     public float castdistance;
     private float doublejumpforce = 5f;
-    private bool candoublejump ;
+    private bool candoublejump;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         sp = GetComponent<SpriteRenderer>();
-       
+
     }
 
     // Update is called once per frame
     void Update()
     {
+        
         horizontalinput = Input.GetAxisRaw("Horizontal");
+
+
         if (Input.GetKey(KeyCode.A))
         {
             sp.flipX = true;
-            animator.SetBool("isrunning", true);
+            
         }
         else if (Input.GetKey(KeyCode.D))
         {
             sp.flipX = false;
-            animator.SetBool("isrunning", true);
+           
         }
         else
         {
             animator.SetBool("isrunning", false);
         }
-         //neu an space va isgrounded = true thi thuc hien nhay
+
+        //neu an space va isgrounded = true thi thuc hien nhay
         if (Input.GetButtonDown("Jump") && isgrounded())
         {
             jump(jumpforce);
             animator.SetBool("isjumping", true);
             animator.SetBool("isdoublejumping", false);
+
         }
         //neu nhu nut space da dc an, isgrounded = false va candoublejump = true
         //thuc hien double jump
-        else if(Input.GetButtonDown("Jump") && !isgrounded() && candoublejump)
-            {
-            jump(doublejumpforce);
+        else if (Input.GetButtonDown("Jump") && !isgrounded() && candoublejump)
+        {
+            rb.linearVelocity = new Vector2(0, doublejumpforce);
+            //jump(doublejumpforce);
             candoublejump = false;
             animator.SetBool("isjumping", false);
             animator.SetBool("isdoublejumping", true);
         }
-        if (horizontalinput < 0)
-        {
-            animator.SetFloat("isfalling", rb.linearVelocity.y);
-        }
     }
-    private void jump( float force)
+
+
+    private void jump(float force)
     {
         rb.AddForce(Vector2.up * force, ForceMode2D.Impulse);
 
@@ -81,7 +86,7 @@ public class movement : MonoBehaviour
     {
         //dung boxcast de check xem player co cham vao mat dat ko
         bool hit = Physics2D.BoxCast(transform.position, boxsize, 0, -transform.up, castdistance, LayerMask.GetMask("ground"));
-       //neu nhu boxcast xac dinh nv da hoac dang cham vao mat dat ==> candoublejump = true
+        //neu nhu boxcast xac dinh nv da hoac dang cham vao mat dat ==> candoublejump = true
         if (hit)
         {
             candoublejump = true;
@@ -91,15 +96,15 @@ public class movement : MonoBehaviour
     //check boxcast
     private void OnDrawGizmos()
     {
-        Gizmos.DrawCube(transform.position-transform.up * castdistance, boxsize);
+        Gizmos.DrawCube(transform.position - transform.up * castdistance, boxsize);
     }
+
     private void FixedUpdate()
     {
         rb.linearVelocity = new Vector2(horizontalinput * movespeed, rb.linearVelocity.y);
     }
-  
-    
 }
+   
 
 
 
