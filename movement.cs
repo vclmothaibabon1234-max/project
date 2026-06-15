@@ -45,6 +45,12 @@ public class movement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         sp = GetComponent<SpriteRenderer>();
+        // Tự động kiểm tra xem trước khi Reload Scene đã chạm checkpoint chưa
+        if (sencecontroller.instance != null && sencecontroller.instance.hasTouchedCheckpoint)
+        {
+            // Giữ đúng tiến độ cũ bằng cách dịch chuyển về vị trí đã lưu
+            transform.position = sencecontroller.instance.lastCheckpointPosition;
+        }
     }
 
     // Update is called once per frame
@@ -88,7 +94,7 @@ public class movement : MonoBehaviour
             wallslide();
             walljumping();
             animator.SetBool("iswallsliding", iswallsliding);
-           if (Input.GetKeyDown(KeyCode.LeftShift) && candash)
+         if (Input.GetKeyDown(KeyCode.LeftShift) && candash)
         {
             StartCoroutine(Dash());
             animator.SetBool("isdoublejumping", true);
